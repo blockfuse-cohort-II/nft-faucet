@@ -12,13 +12,7 @@ contract BlockfuseNFT is ERC721, Ownable {
         tokenCounter = 0;
     }
 
-    function mint(address to) public {
-    require(!hasMinted[to], "You already own an NFT");
-    hasMinted[to] = true;
-    uint256 tokenId = tokenCounter;
-    _safeMint(to, tokenId);
-    tokenCounter += 1;
-}
+    
 
     function exists(uint256 tokenId) public view returns (bool) {
         try this.ownerOf(tokenId) {
