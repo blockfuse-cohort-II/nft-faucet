@@ -39,7 +39,5 @@ contract SepoliaFaucet is Ownable { // ✅ Inherit Ownable
     }
 
     // Function to check the balance of the faucet
-    function getBalance() public view returns (uint256) {
-        return address(this).balance;
-    }
+    
 }
