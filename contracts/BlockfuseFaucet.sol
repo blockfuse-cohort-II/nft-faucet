@@ -2,13 +2,13 @@
 pragma solidity ^0.8.28;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
-import "@openzeppelin/contracts/access/Ownable.sol"; // ✅ Import Ownable
+import "@openzeppelin/contracts/access/Ownable.sol"; 
 
-contract SepoliaFaucet is Ownable { // ✅ Inherit Ownable
+contract SepoliaFaucet is Ownable { 
     IERC721 public nftContract;
     mapping(address => uint256) public lastClaimedTimestamp;
 
-    constructor(address _nftContractAddress) Ownable(msg.sender) { // ✅ Pass msg.sender to Ownable
+    constructor(address _nftContractAddress) Ownable(msg.sender) { 
         nftContract = IERC721(_nftContractAddress);
     }
 
@@ -27,14 +27,14 @@ contract SepoliaFaucet is Ownable { // ✅ Inherit Ownable
         require(address(this).balance >= 0.001 ether, "Faucet is empty");
 
         lastClaimedTimestamp[msg.sender] = block.timestamp;
-        payable(msg.sender).transfer(0.001 ether); // Send 0.001 Sepolia ETH
+        payable(msg.sender).transfer(0.001 ether); 
     }
 
     // Fallback function to receive ETH (for funding the faucet)
     receive() external payable {}
 
     // Function to withdraw funds from the faucet (only owner)
-    function withdrawFunds() external onlyOwner { // ✅ Only contract owner can withdraw
+    function withdrawFunds() external onlyOwner { 
         payable(owner()).transfer(address(this).balance);
     }
 
