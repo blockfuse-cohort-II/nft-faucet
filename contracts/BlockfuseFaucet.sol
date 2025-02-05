@@ -42,4 +42,5 @@ contract SepoliaFaucet is Ownable {
     function getBalance() public view returns (uint256) {
         return address(this).balance;
     }
+    
 }
