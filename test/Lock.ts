@@ -27,20 +27,28 @@ describe("BlockfuseNFT", function () {
     it("Should initialize tokenCounter to 0", async function () {
       expect(await blockfuseNFT.tokenCounter()).to.equal(0);
     });
+
+    it("Should check if owner of contract is the person that deployed the contract", async function () {
+      expect(await blockfuseNFT.owner()).to.equal(owner.address);
+    });
   });
 
   describe("Minting", function () {
     it("Should allow an address to mint an NFT if they haven't already", async function () {
-      const initialTokenCounter = await blockfuseNFT.tokenCounter(); 
+      const initialTokenCounter = await blockfuseNFT.tokenCounter();
       await blockfuseNFT.mint(addr1.address);
-      expect(await blockfuseNFT.tokenCounter()).to.equal(initialTokenCounter + 1n); // Use 1n for bigint addition
+      expect(await blockfuseNFT.tokenCounter()).to.equal(
+        initialTokenCounter + 1n
+      );
       expect(await blockfuseNFT.ownerOf(0)).to.equal(addr1.address);
       expect(await blockfuseNFT.hasMinted(addr1.address)).to.equal(true);
     });
 
     it("Should prevent an address from minting more than one NFT", async function () {
       await blockfuseNFT.mint(addr1.address);
-      await expect(blockfuseNFT.mint(addr1.address)).to.be.revertedWith("You already own an NFT");
+      await expect(blockfuseNFT.mint(addr1.address)).to.be.revertedWith(
+        "You already own an NFT"
+      );
     });
 
     it("Should allow multiple addresses to mint unique NFTs", async function () {
@@ -64,20 +72,6 @@ describe("BlockfuseNFT", function () {
       expect(await blockfuseNFT.exists(0)).to.equal(false);
       await blockfuseNFT.mint(addr1.address);
       expect(await blockfuseNFT.exists(1)).to.equal(false);
-    });
+    })
   });
-
-  // describe("Ownership", function () {
-  //   it("Should restrict minting to the owner only if desired (optional)", async function () {
-  //     /*
-  //     Uncomment the following lines if you modify the `mint` function to be `onlyOwner`
-      
-  //     await expect(blockfuseNFT.connect(addr1).mint(addr1.address)).to.be.revertedWith("Ownable: caller is not the owner");
-
-  //     // Owner can mint
-  //     await blockfuseNFT.mint(addr1.address);
-  //     expect(await blockfuseNFT.ownerOf(0)).to.equal(addr1.address);
-  //     */
-  //   });
-  // });
 });
