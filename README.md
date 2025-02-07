@@ -69,6 +69,7 @@ Deploy the `SepoliaFaucet` contract, passing the address of `BlockfuseNFT` as an
 ```sh
 git clone https://github.com/your-username/nft-faucet.git
 cd nft-faucet
+```
 
 ### **2️⃣ Install Dependencies
 ```sh
