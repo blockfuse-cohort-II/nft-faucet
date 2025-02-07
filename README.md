@@ -64,6 +64,48 @@ Deploy the `SepoliaFaucet` contract, passing the address of `BlockfuseNFT` as an
 - A funded Sepolia account for deployment
 - A blockchain development environment like Hardhat or Foundry
 
+## 🛠️ Installation
+### **1️⃣ Clone the Repository**
+```sh
+git clone https://github.com/your-username/nft-faucet.git
+cd nft-faucet
+
+### **2️⃣ Install Dependencies
+```sh
+npm install
+```
+
+### **3️⃣Compile Smart Contracts
+```sh
+npx hardhat compile
+```
+
+### **4️⃣ Run Tests
+```sh
+npx hardhat test
+```
+
+### 🚀 Deploying to Sepolia Testnet
+### **1️⃣ Configure Environment Variables
+Create a .env file in the root directory and add:
+```sh
+PRIVATE_KEY=your_wallet_private_key
+ALCHEMY_API_KEY=your_alchemy_api_key
+```
+
+### **2️⃣ Deploy the Contract
+```sh
+npx hardhat run scripts/deploy.ts --network sepolia
+```
+
+### **🤝 Contributing
+1. Fork the repository
+2. Create a feature branch (git checkout -b feature-name)
+3. Commit your changes (git commit -m "Add feature X")
+4. Push to the branch (git push origin feature-name)
+5. Create a Pull Request
+
+
 ## License
 
 This project is licensed under the **MIT License**.
