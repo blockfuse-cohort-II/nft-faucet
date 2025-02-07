@@ -90,8 +90,9 @@ npx hardhat test
 ### **1️⃣ Configure Environment Variables
 Create a .env file in the root directory and add:
 ```sh
-PRIVATE_KEY=your_wallet_private_key
-ALCHEMY_API_KEY=your_alchemy_api_key
+SEPOLIA_RPC_URL=your_alchemy_api_key
+PRIVATE_KEY=our_wallet_private_key
+ETHERSCAN_API_KEY=your_etherscan_api_key
 ```
 
 ### **2️⃣ Deploy the Contract
