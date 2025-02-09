@@ -20,15 +20,7 @@
 //         tokenCounter += 1;
 //     }
 
-//     function exists(uint256 tokenId) public view returns (bool) {
-//         try this.ownerOf(tokenId) {
-//             return true;
-//         } catch {
-//             return false;
-//         }
-//     }
 // }
-
 
 pragma solidity ^0.8.28;
 
@@ -40,7 +32,9 @@ contract BlockfuseNFT is ERC721, Ownable {
     mapping(address => bool) public hasMinted;
     string private baseURI;
 
-    constructor(string memory _baseURI) ERC721("BlockfuseNFT", "BFN") Ownable(msg.sender) {
+    constructor(
+        string memory _baseURI
+    ) ERC721("Katera NFT", "KFT") Ownable(msg.sender) {
         tokenCounter = 0;
         baseURI = _baseURI; // Set IPFS base URI during deployment
     }
@@ -53,8 +47,10 @@ contract BlockfuseNFT is ERC721, Ownable {
         tokenCounter += 1;
     }
 
-    function tokenURI(uint256 tokenId) public view override returns (string memory) {
-         _requireOwned(tokenId);
+    function tokenURI(
+        uint256 tokenId
+    ) public view override returns (string memory) {
+        _requireOwned(tokenId);
 
         // string memory baseURI = _baseURI();
         return bytes(baseURI).length > 0 ? string.concat(baseURI) : "";
@@ -62,5 +58,13 @@ contract BlockfuseNFT is ERC721, Ownable {
 
     function setBaseURI(string memory _newBaseURI) public onlyOwner {
         baseURI = _newBaseURI;
+    }
+
+    function exists(uint256 tokenId) public view returns (bool) {
+        try this.ownerOf(tokenId) {
+            return true;
+        } catch {
+            return false;
+        }
     }
 }
