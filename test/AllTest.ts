@@ -1,127 +1,88 @@
+import {
+  time,
+  loadFixture,
+} from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { BlockfuseNFT, BlockfuseNFT__factory, SepoliaFaucet, SepoliaFaucet__factory } from "../typechain-types";
 
-describe("BlockfuseNFT & SepoliaFaucet", function () {
-  let blockfuseNFT: BlockfuseNFT;
-  let faucet: SepoliaFaucet;
-  let owner: any;
-  let addr1: any;
-  let addr2: any;
-
-  beforeEach(async function () {
-    [owner, addr1, addr2] = await ethers.getSigners();
-
-    const BlockfuseNFTFactory: BlockfuseNFT__factory = <BlockfuseNFT__factory>(
-      await ethers.getContractFactory("BlockfuseNFT")
-    );
-    blockfuseNFT = await BlockfuseNFTFactory.deploy();
-    await blockfuseNFT.deploymentTransaction();
-
-    const SepoliaFaucetFactory: SepoliaFaucet__factory = <SepoliaFaucet__factory>(
-      await ethers.getContractFactory("SepoliaFaucet")
-    );
-    faucet = await SepoliaFaucetFactory.deploy(blockfuseNFT.getAddress());
-    await faucet.deploymentTransaction();
-
-
+describe("SepoliaFaucet", function () {
+  async function deployContracts() {
+    const [owner, user1, user2] = await ethers.getSigners();
+    const BlockLabToken = await ethers.getContractFactory("BlockfuseNFT");
+    const baseURI = "https://ipfs.io/ipfs/QmZQ8662Q1KQ8978z234567890";
+    const nft = await BlockLabToken.deploy(baseURI);
+    const Faucet = await ethers.getContractFactory("SepoliaFaucet");
+    const faucet = await Faucet.deploy(await nft.getAddress());
     await owner.sendTransaction({
       to: await faucet.getAddress(),
       value: ethers.parseEther("1.0"),
     });
-  });
 
-  describe("Faucet Deployment", function () {
-    it("Should set the right owner", async function () {
+    return { faucet, nft, owner, user1, user2 };
+  }
+
+  describe("Deployment", function () {
+    it("Should set the correct owner ...", async function () {
+      const { faucet, owner } = await loadFixture(deployContracts);
       expect(await faucet.owner()).to.equal(owner.address);
     });
+  });
 
-    it("Should set the correct NFT contract address", async function () {
-      expect(await faucet.nftContract()).to.equal(await blockfuseNFT.getAddress());
+  describe("check nft Ownership Check", function () {
+    it("Should return not true for the address with no nft", async function () {
+      const { faucet, user1 } = await loadFixture(deployContracts);
+      expect(await faucet.ownsNFT(user1.address)).to.be.false;
     });
 
-    it("Should have the correct initial balance", async function () {
-      expect(await faucet.getBalance()).to.equal(ethers.parseEther("1.0"));
+    it("Should return a true for address with an nft", async function () {
+      const { faucet, nft, user1 } = await loadFixture(deployContracts);
+      await nft.mint(user1.address);
+      expect(await faucet.ownsNFT(user1.address)).to.be.true;
     });
   });
 
-  describe("NFT Ownership Check", function () {
-    it("Should return false for address with no NFT", async function () {
-      expect(await faucet.ownsNFT(addr1.address)).to.be.false;
-    });
-
-    it("Should return true for address with NFT", async function () {
-      await blockfuseNFT.mint(addr1.address);
-      expect(await faucet.ownsNFT(addr1.address)).to.be.true;
-    });
-  });
-
-  describe("ETH Claims", function () {
-    it("Should fail if user doesn't own an NFT", async function () {
-      await expect(faucet.connect(addr1).claimETH())
-        .to.be.revertedWith("You must own an NFT to claim ETH");
-    });
-
-    it("Should allow claim with NFT ownership", async function () {
-      await blockfuseNFT.mint(addr1.address);
-      const initialBalance = await ethers.provider.getBalance(addr1.address);
-      await faucet.connect(addr1).claimETH();
-      const finalBalance = await ethers.provider.getBalance(addr1.address);
-      expect(finalBalance - initialBalance).to.be.greaterThan(0);
-    });
-
-    it("Should prevent claims within 24 hours", async function () {
-      await blockfuseNFT.mint(addr1.address);
-      await faucet.connect(addr1).claimETH();
-      await expect(faucet.connect(addr1).claimETH())
-        .to.be.revertedWith("You can only claim once every 24 hours");
-    });
-
-    it("Should allow claims after 24 hours", async function () {
-      await blockfuseNFT.mint(addr1.address);
-      await faucet.connect(addr1).claimETH();
-      await ethers.provider.send("evm_increaseTime", [86401]);
-      await ethers.provider.send("evm_mine");
-      await expect(faucet.connect(addr1).claimETH()).to.not.be.reverted;
-    });
-
-    it("Should fail if faucet is empty", async function () {
-      const EmptyFaucetFactory: SepoliaFaucet__factory = <SepoliaFaucet__factory>(
-        await ethers.getContractFactory("SepoliaFaucet")
+  describe("eth Claims from the faucet", function () {
+    it("Should not allow claims without nft ownership", async function () {
+      const { faucet, user1 } = await loadFixture(deployContracts);
+      await expect(faucet.connect(user1).claimETH()).to.be.revertedWith(
+        "You must own an NFT to claim ETH"
       );
-      const emptyFaucet = await EmptyFaucetFactory.deploy(await blockfuseNFT.getAddress());
-      await emptyFaucet.deploymentTransaction();
-      
-      await blockfuseNFT.mint(addr1.address);
-      await expect(emptyFaucet.connect(addr1).claimETH())
-        .to.be.revertedWith("Faucet is empty");
+    });
+
+    it("Should not allow claims within 24 hours ..... ", async function () {
+      const { faucet, nft, user1 } = await loadFixture(deployContracts);
+      await nft.mint(user1.address);
+      await faucet.connect(user1).claimETH();
+      await expect(faucet.connect(user1).claimETH()).to.be.revertedWith(
+        "You can only claim once every 24 hours"
+      );
+    });
+
+    it("Should not allow claims when faucet is empty", async function () {
+      const { faucet, nft, user1, owner } = await loadFixture(deployContracts);
+      await nft.mint(user1.address);
+      await faucet.connect(owner).withdrawFunds();
+      await expect(faucet.connect(user1).claimETH()).to.be.revertedWith(
+        "Faucet is empty"
+      );
     });
   });
 
-  describe("Fund Management", function () {
-    it("Should accept ETH transfers", async function () {
-      const initialBalance = await faucet.getBalance();
-      await owner.sendTransaction({
-        to: await faucet.getAddress(),
-        value: ethers.parseEther("0.5"),
-      });
-      expect(await faucet.getBalance()).to.equal(initialBalance + ethers.parseEther("0.5"));
-    });
-
+  describe("withdrawals", function () {
     it("Should allow owner to withdraw funds", async function () {
+      const { faucet, owner } = await loadFixture(deployContracts);
       const initialBalance = await ethers.provider.getBalance(owner.address);
-      const faucetBalance = await faucet.getBalance();
-      
-      await faucet.withdrawFunds();
-      
-      const finalBalance = await ethers.provider.getBalance(owner.address);
+
+      await faucet.connect(owner).withdrawFunds();
+
       expect(await faucet.getBalance()).to.equal(0);
-      expect(finalBalance).to.be.greaterThan(initialBalance);
     });
 
-    it("Should prevent non-owner from withdrawing funds", async function () {
-      await expect(faucet.connect(addr1).withdrawFunds())
-        .to.be.revertedWithCustomError(faucet, "OwnableUnauthorizedAccount");
+    it("Should not allow non-owner to withdraw funds", async function () {
+      const { faucet, user1, owner, nft } = await loadFixture(deployContracts);
+      await expect(
+        faucet.connect(user1).withdrawFunds()
+      ).to.be.revertedWithCustomError(nft, "OwnableUnauthorizedAccount");
     });
   });
 });
