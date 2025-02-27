@@ -10,6 +10,9 @@ const config: HardhatUserConfig = {
       url: process.env.SEPOLIA_RPC_URL || "", // Fallback to empty string if undefined
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
     },
+    forking: {
+      url: process.env.SEPOLIA_RPC_URL || "", 
+    }
   },
   etherscan: {
     apiKey: process.env.ETHERSCAN_API_KEY, // Move this outside 'networks'
